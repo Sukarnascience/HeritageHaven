@@ -1,0 +1,15 @@
+{
+  "name":"Heritage Haven",
+  "version": "0.0.1",
+  "theme":"dark",
+  "color":"blue",
+  "author":"Sukarna Jana",
+
+  "Database": {
+    "username": "root",
+    "password": "S.J@n@1909",
+    "host": "localhost",
+    "port": 3306,
+    "databaseSetupPath": "/database/setupLocalDB.db"
+  }
+}
