@@ -2,7 +2,7 @@
   "name":"Heritage Haven",
   "version": "0.0.1",
   "theme":"dark",
-  "color":"blue",
+  "color":"green",
   "author":"Sukarna Jana",
 
   "Database": {
@@ -10,6 +10,7 @@
     "password": "S.J@n@1909",
     "host": "localhost",
     "port": 3306,
+    "database_name": "heritagehaven",
     "databaseSetupPath": "/database/setupLocalDB.db"
   }
 }
