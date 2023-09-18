@@ -4,6 +4,7 @@ echo Author: Sukarna Jana
 echo Version: 0.0.1V
 echo Last Update: 13-09-2023
 echo.
+echo Installing...
 
 setlocal enabledelayedexpansion
 
@@ -31,5 +32,14 @@ if %errorlevel% neq 0 (
 )
 
 echo Packages installed successfully.
-pause
+echo.
+echo Press Enter to start the application...
+pause >nul
+
+REM Try running main.py with Python, and if it fails, try with Python3
+python main.py
+if %errorlevel% neq 0 (
+    python3 main.py
+)
+
 exit /b 0
