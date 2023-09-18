@@ -22,27 +22,72 @@ class App(customtkinter.CTk):
         self.iconpath = ImageTk.PhotoImage(file=self.image_path)
         self.wm_iconbitmap()
         self.iconphoto(False, self.iconpath)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
         # create tabview
         self.tabview = customtkinter.CTkTabview(self)
-        self.tabview.grid(row=0, column=0, padx=(20, 0), pady=(0, 0))
-        self.tabview.add("CTkTabview")
+        self.tabview.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
+        self.tabview.add("Kaval Master")
         self.tabview.add("Tab 2")
         self.tabview.add("Settings")
-        self.tabview.tab("CTkTabview").grid_columnconfigure(0, weight=1) 
+        self.tabview.tab("Kaval Master").grid_columnconfigure(0, weight=1) 
         self.tabview.tab("Tab 2").grid_columnconfigure(0, weight=1)
         self.tabview.tab("Settings").grid_columnconfigure(0, weight=1)
 
-        self.optionmenu_1 = customtkinter.CTkOptionMenu(self.tabview.tab("CTkTabview"), dynamic_resizing=False,
-                                                        values=["Value 1", "Value 2", "Value Long Long Long"])
-        self.optionmenu_1.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.combobox_1 = customtkinter.CTkComboBox(self.tabview.tab("CTkTabview"),
-                                                    values=["Value 1", "Value 2", "Value Long....."])
-        self.combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
-        self.string_input_button = customtkinter.CTkButton(self.tabview.tab("CTkTabview"), text="Open CTkInputDialog",
+        # new entry dilog box part
+        self.addNew_frame = customtkinter.CTkFrame(self.tabview.tab("Kaval Master"))
+        self.addNew_frame.grid(row=0, column=0, padx=(20, 20), pady=(10, 10),sticky="nsew")
+
+        self.enterId_label_inNew = customtkinter.CTkLabel(self.addNew_frame, text="Enter ID")
+        self.enterId_label_inNew.grid(row=0, column=0, padx=(20, 20), pady=(20, 20))
+        self.enter_id_inNew = customtkinter.CTkEntry(self.addNew_frame, placeholder_text="1909")
+        self.enter_id_inNew.grid(row=0, column=1, padx=(20, 20), pady=(20, 20))
+
+        self.enterName_label_inNew = customtkinter.CTkLabel(self.addNew_frame, text="Enter Name")
+        self.enterName_label_inNew.grid(row=1, column=0, padx=(20, 20), pady=(20, 20))
+        self.enter_Name_inNew = customtkinter.CTkEntry(self.addNew_frame, placeholder_text="Kaval xx")
+        self.enter_Name_inNew.grid(row=1, column=1, padx=(20, 20), pady=(20, 20))
+
+        self.enterNew_inNew = customtkinter.CTkButton(self.addNew_frame, text="Add into Database",
                                                            command=self.open_input_dialog_event)
-        self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
-        self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Tab 2"), text="CTkLabel on Tab 2")
+        self.enterNew_inNew.grid(row=2, column=0, columnspan=2, padx=(20, 20), pady=(20, 20))
+
+        # edit option dilog box
+        self.editDB_frame = customtkinter.CTkFrame(self.tabview.tab("Kaval Master"))
+        self.editDB_frame.grid(row=0, column=1, padx=(20, 20), pady=(10, 10),sticky="nsew")
+
+        self.enterId_label_inEdit = customtkinter.CTkLabel(self.editDB_frame, text="Enter ID")
+        self.enterId_label_inEdit.grid(row=0, column=0, padx=(20, 20), pady=(20, 20))
+        self.enter_id_inEdit = customtkinter.CTkEntry(self.editDB_frame, placeholder_text="1909")
+        self.enter_id_inEdit.grid(row=0, column=1, padx=(20, 20), pady=(20, 20))
+
+        self.enter_newName_label_inEdit = customtkinter.CTkLabel(self.editDB_frame, text="Enter New Name")
+        self.enter_newName_label_inEdit.grid(row=1, column=0, padx=(20, 20), pady=(20, 20))
+        self.enter_newName_inEdit = customtkinter.CTkEntry(self.editDB_frame, placeholder_text="Suku...")
+        self.enter_newName_inEdit.grid(row=1, column=1, padx=(20, 20), pady=(20, 20))
+
+        self.enter_newNameCof_label_inEdit = customtkinter.CTkLabel(self.editDB_frame, text="Conform New Name")
+        self.enter_newNameCof_label_inEdit.grid(row=2, column=0, padx=(20, 20), pady=(20, 20))
+        self.enter_newNameCof_inEdit = customtkinter.CTkEntry(self.editDB_frame, placeholder_text="Suku...")
+        self.enter_newNameCof_inEdit.grid(row=2, column=1, padx=(20, 20), pady=(20, 20))
+
+        self.editBtn_inEdit = customtkinter.CTkButton(self.editDB_frame, text="Save the changes",
+                                                           command=self.open_input_dialog_event)
+        self.editBtn_inEdit.grid(row=3, column=0, columnspan=2, padx=(20, 20), pady=(20, 20))
+
+        # Just Label to view Tabel
+        self.labelkm_frame = customtkinter.CTkFrame(self.tabview.tab("Kaval Master"), fg_color="transparent")
+        self.labelkm_frame.grid(row=2, column=0, padx=(0, 0), pady=(10, 10), sticky="nsew")
+        self.label_inKMlabel = customtkinter.CTkLabel(self.labelkm_frame, text="Database View Point")
+        self.label_inKMlabel.grid(row=0, column=0, columnspan=2, padx=(5, 5), pady=(5, 5),sticky="nsew")
+
+        # view Tabel
+        self.viewTabel_km_frame = customtkinter.CTkFrame(self.tabview.tab("Kaval Master"))
+        self.viewTabel_km_frame.grid(row=3, column=0, columnspan=2, padx=(5, 5), pady=(5, 5), sticky="nsew")
+
+
+        self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Tab 2"), text="Need to write code still")
         self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
         self.appearance_mode_label = customtkinter.CTkLabel(self.tabview.tab("Settings"), text="Appearance Mode:", anchor="w")
         self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
