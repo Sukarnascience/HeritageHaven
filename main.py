@@ -386,8 +386,8 @@ def notification(head,body):
     pass
 
 def open_main_window():
-    #if(isUP.isAvailabe()):
-    #    isUP.updateNotify()
+    if(isUP.isAvailabe()):
+        isUP.updateNotify()
     # Create a MySQL connection
     splash_root.destroy()
     app = App()
