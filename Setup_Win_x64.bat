@@ -1,5 +1,5 @@
 @echo off
-echo Serial2CSV - Setup Script
+echo HeritageHaven - Setup Script
 echo Author: Sukarna Jana
 echo Version: 0.0.1V
 echo Last Update: 13-09-2023
