@@ -1,6 +1,6 @@
 -- @Author      : Sukarna Jana
 -- @Version     : 0.0.1V
--- @Last Update : 18-09-2023
+-- @Last Update : 29-09-2023
 -- @Brief       : Create DataBase and Tables by which we can use for setuping everything for Software to run
 -- @SQL Version : 8.0.34
 
@@ -23,5 +23,13 @@ CREATE TABLE kaval_master (
     CHECK(Kaval_ID >= 0 AND Kaval_ID <= 9999)
 );
 
+CREATE TABLE surname_master (
+    Surname_ID INT UNSIGNED NOT NULL,
+    Surname_Name VARCHAR(40) NOT NULL,
+    UNIQUE(Surname_ID),
+    CHECK(Surname_ID >= 0 AND Surname_ID <= 9999)
+);
+
 -- Debug 
 SELECT * FROM kaval_master;
+SELECT * FROM surname_master;
