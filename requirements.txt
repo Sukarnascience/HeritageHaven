@@ -5,3 +5,4 @@ requests
 urllib3==1.26.7
 mysql-connector-python
 tksheet
+reportlab 
