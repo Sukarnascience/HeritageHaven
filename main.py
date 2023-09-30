@@ -141,7 +141,13 @@ class App(customtkinter.CTk):
 
         # Pack the treeview into the parent widget
         self.tree.pack(fill="both", expand=True)
+        # Create a context menu
+        self.context_menu_KM = tk.Menu(self, tearoff=0, font=("Arial", 14))  # Set the font size to 14 or adjust as needed
+        self.context_menu_KM.add_command(label="Edit", command=self.edit_selected_row_KM)
+        self.context_menu_KM.add_command(label="Delete", command=self.delete_selected_row_KM)
 
+        # Bind the right-click event to the Treeview
+        self.tree.bind("<Button-3>", self.on_right_click_KM)
         # Define column names
         #self.tree.heading("#1", text="SNo.")
         #self.tree.heading("#2", text="Kaval ID")
@@ -170,27 +176,29 @@ class App(customtkinter.CTk):
 
         # BEGAIN OF TAB 2 NAMED : Surname Master
         # Configure Treeview style
-        style = ttk.Style()
-        style.theme_use("default")
-        style.configure("Treeview",
-                        background="#2a2d2e",
-                        foreground="white",
-                        rowheight=25,
-                        fieldbackground="#343638",
-                        bordercolor="#343638",
-                        borderwidth=0,
-                        font=('Arial', 12))  # Set the font size to 12 or adjust as needed
+        # Configure style
+        self.style = ttk.Style()
+        self.style.theme_use("default")
+        self.style.configure("Treeview",
+                             background="#2a2d2e",
+                             foreground="white",
+                             rowheight=25,
+                             fieldbackground="#343638",
+                             bordercolor="#343638",
+                             borderwidth=1,
+                             font=('Arial', 12))
 
-        style.map('Treeview', background=[('selected', '#22559b')])
+        self.style.map('Treeview', background=[('selected', '#22559b')])
 
-        style.configure("Treeview.Heading",
-                        background="#565b5e",
-                        foreground="white",
-                        relief="flat",
-                        font=('Arial', 12))  # Set the font size to 12 or adjust as needed
+        self.style.configure("Treeview.Heading",
+                             background="#565b5e",
+                             foreground="white",
+                             relief="flat",
+                             font=('Arial', 12))
 
-        style.map("Treeview.Heading",
-                background=[('active', '#3484F0')])
+        self.style.map("Treeview.Heading", background=[('active', '#3484F0')])
+
+
         # new entry dilog box part
         self.addNew_frame_SM = customtkinter.CTkFrame(self.tabview.tab("Surname Master"))
         self.addNew_frame_SM.grid(row=0, column=0, padx=(0, 5), pady=(10, 10),sticky="nsew")
@@ -275,14 +283,19 @@ class App(customtkinter.CTk):
             # Create a new Treeview widget
             self.treeview = ttk.Treeview(self.viewTabel_km_frame_SM, columns=list(range(len(data[0]))), show="headings", style="Treeview")
             # Configure the interior frame to expand
+            
             self.viewTabel_km_frame_SM.columnconfigure(0, weight=1)
             self.viewTabel_km_frame_SM.rowconfigure(0, weight=1)
             self.treeview.grid(row=0, column=0, sticky="nsew")
             self.treeview.grid(sticky="nsew")
+            
+            
+            #self.treeview.tag_configure("oddrow", background="#2a2d2e")
+            #self.treeview.tag_configure("evenrow", background="#343638")
 
             # Set column headings
             for i, heading in enumerate(cursor.column_names):
-                self.treeview.heading(i, text=heading)
+                self.treeview.heading(i, text=heading, anchor='center')
 
             # Insert data into the treeview
             for row in data:
@@ -290,6 +303,13 @@ class App(customtkinter.CTk):
 
             # Pack the treeview into the parent widget
             self.treeview.pack(fill="both", expand=True)
+            # Create a context menu
+            self.context_menu_SM = tk.Menu(self, tearoff=0, font=("Arial", 14))  # Set the font size to 14 or adjust as needed
+            self.context_menu_SM.add_command(label="Edit", command=self.edit_selected_row_SM)
+            self.context_menu_SM.add_command(label="Delete", command=self.delete_selected_row_SM)
+
+            # Bind the right-click event to the Treeview
+            self.treeview.bind("<Button-3>", self.on_right_click_SM)
 
             cursor.close()
             db.close()
@@ -376,6 +396,199 @@ class App(customtkinter.CTk):
     #def change_color_theme_event(self, theme):
         #self.set_default_color_theme(theme)
 
+    def on_right_click_KM(self,event):
+        item = self.treeview.identify_row(event.y)  # Get the item under the cursor
+        # Display a context menu with options (Edit, Delete) based on the selected item
+        self.context_menu_KM.post(event.x_root, event.y_root)
+
+    def edit_selected_row_KM(self):
+        # Implement logic to edit the selected row (open a pop-up window, etc.)
+        print("Edit selected row")
+        # Get the selected item from the Treeview
+        selected_item = self.tree.selection()
+        
+        if not selected_item:
+            # No item selected
+            return
+
+        # Extract Kaval_ID from the selected item
+        selected_id = self.tree.item(selected_item, "values")[1]
+        print(selected_id)
+
+        # Create an input dialog to get the new name
+        new_name_dialog = customtkinter.CTkInputDialog(text="Enter the new name", title="Editing Name")
+        new_name = new_name_dialog.get_input()
+
+        if not new_name:
+            # No new name entered
+            return
+
+        # Create a MySQL connection
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir, "manifest.json")
+        json_data = read_json_file(file_path)
+        db = mysql.connector.connect(
+            host=json_data["Database"]["host"],
+            user=json_data["Database"]["username"],
+            password=json_data["Database"]["password"],
+            database=json_data["Database"]["database_name"]
+        )
+
+        # Create a cursor
+        cursor = db.cursor()
+
+        # Update the name in the MySQL table based on the extracted ID
+        cursor.execute("UPDATE kaval_master SET Kaval_Name = %s WHERE Kaval_ID = %s", (new_name, selected_id))
+
+        # Commit the changes to the database
+        db.commit()
+
+        # Close the cursor and database connection
+        cursor.close()
+        db.close()
+
+        # Refresh the table to reflect the changes
+        self.refresh_table()
+        
+
+    def delete_selected_row_KM(self):
+        # Implement logic to delete the selected row from the SQL database
+        print("Delete selected row")
+        # Get the selected item from the Treeview
+        selected_item = self.tree.selection()
+        
+        if not selected_item:
+            # No item selected
+            return
+
+        # Extract Kaval_ID from the selected item
+        selected_id = self.tree.item(selected_item, "values")[1]
+        print(selected_id)
+
+        # Create a MySQL connection
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir, "manifest.json")
+        json_data = read_json_file(file_path)
+        db = mysql.connector.connect(
+            host=json_data["Database"]["host"],
+            user=json_data["Database"]["username"],
+            password=json_data["Database"]["password"],
+            database=json_data["Database"]["database_name"]
+        )
+
+        # Create a cursor
+        cursor = db.cursor()
+
+        # Delete the data from the MySQL table based on the extracted ID
+        cursor.execute("DELETE FROM kaval_master WHERE Kaval_ID = %s", (selected_id,))
+
+        # Commit the changes to the database
+        db.commit()
+
+        # Close the cursor and database connection
+        cursor.close()
+        db.close()
+
+        # Refresh the table to reflect the changes
+        self.refresh_table()
+
+
+    def on_right_click_SM(self,event):
+        item = self.treeview.identify_row(event.y)  # Get the item under the cursor
+        # Display a context menu with options (Edit, Delete) based on the selected item
+        self.context_menu_SM.post(event.x_root, event.y_root)
+
+    def edit_selected_row_SM(self):
+        # Implement logic to edit the selected row (open a pop-up window, etc.)
+        print("Edit selected row")
+        # Get the selected item from the Treeview
+        selected_item = self.treeview.selection()
+        
+        if not selected_item:
+            # No item selected
+            return
+
+        # Extract Kaval_ID from the selected item
+        selected_id = self.treeview.item(selected_item, "values")[0]
+        print(selected_id)
+
+        # Create an input dialog to get the new name
+        new_name_dialog = customtkinter.CTkInputDialog(text="Enter the new name", title="Editing Name")
+        new_name = new_name_dialog.get_input()
+
+        if not new_name:
+            # No new name entered
+            return
+
+        # Create a MySQL connection
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir, "manifest.json")
+        json_data = read_json_file(file_path)
+        db = mysql.connector.connect(
+            host=json_data["Database"]["host"],
+            user=json_data["Database"]["username"],
+            password=json_data["Database"]["password"],
+            database=json_data["Database"]["database_name"]
+        )
+
+        # Create a cursor
+        cursor = db.cursor()
+
+        # Update the name in the MySQL table based on the extracted ID
+        cursor.execute("UPDATE surname_master SET Surname_Name = %s WHERE Surname_ID = %s", (new_name, selected_id))
+
+        # Commit the changes to the database
+        db.commit()
+
+        # Close the cursor and database connection
+        cursor.close()
+        db.close()
+
+        # Refresh the table to reflect the changes
+        self.refresh_table_SM()
+        
+
+    def delete_selected_row_SM(self):
+        # Implement logic to delete the selected row from the SQL database
+        print("Delete selected row")
+        # Get the selected item from the Treeview
+        selected_item = self.treeview.selection()
+        
+        if not selected_item:
+            # No item selected
+            return
+
+        # Extract Kaval_ID from the selected item
+        selected_id = self.treeview.item(selected_item, "values")[0]
+        print(selected_id)
+
+        # Create a MySQL connection
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir, "manifest.json")
+        json_data = read_json_file(file_path)
+        db = mysql.connector.connect(
+            host=json_data["Database"]["host"],
+            user=json_data["Database"]["username"],
+            password=json_data["Database"]["password"],
+            database=json_data["Database"]["database_name"]
+        )
+
+        # Create a cursor
+        cursor = db.cursor()
+
+        # Delete the data from the MySQL table based on the extracted ID
+        cursor.execute("DELETE FROM surname_master WHERE Surname_ID = %s", (selected_id,))
+
+        # Commit the changes to the database
+        db.commit()
+
+        # Close the cursor and database connection
+        cursor.close()
+        db.close()
+
+        # Refresh the table to reflect the changes
+        self.refresh_table_SM()
+
     def add_to_the_surname_master(self):
         # Retrieve user-entered ID and Name from the Entry widgets
         new_id = self.enter_id_inNew_SM.get()
@@ -460,6 +673,13 @@ class App(customtkinter.CTk):
 
             # Pack the treeview into the parent widget
             self.treeview.pack(fill="both", expand=True)
+            # Create a context menu
+            self.context_menu_SM = tk.Menu(self, tearoff=0, font=("Arial", 14))  # Set the font size to 14 or adjust as needed
+            self.context_menu_SM.add_command(label="Edit", command=self.edit_selected_row_SM)
+            self.context_menu_SM.add_command(label="Delete", command=self.delete_selected_row_SM)
+
+            # Bind the right-click event to the Treeview
+            self.treeview.bind("<Button-3>", self.on_right_click_SM)
 
             cursor.close()
             db.close()
@@ -493,6 +713,15 @@ class App(customtkinter.CTk):
 
             for row in data:
                 self.tree.insert("", "end", values=row)
+
+
+            # Create a context menu
+            self.context_menu_KM = tk.Menu(self, tearoff=0, font=("Arial", 14))  # Set the font size to 14 or adjust as needed
+            self.context_menu_KM.add_command(label="Edit", command=self.edit_selected_row_KM)
+            self.context_menu_KM.add_command(label="Delete", command=self.delete_selected_row_KM)
+
+            # Bind the right-click event to the Treeview
+            self.tree.bind("<Button-3>", self.on_right_click_KM)
 
             cursor.close()
             db.close()
