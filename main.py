@@ -10,8 +10,8 @@ import isUpdate as isUP
 from tksheet import Sheet
 import mysql.connector
 
-customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
-customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+customtkinter.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
+customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
 
 class App(customtkinter.CTk):
     def __init__(self):
@@ -32,11 +32,21 @@ class App(customtkinter.CTk):
         self.tabview = customtkinter.CTkTabview(self)
         self.tabview.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
         self.tabview.add("Kaval Master")
-        self.tabview.add("Tab 2")
+        self.tabview.add("Surname Master")
         self.tabview.add("Settings")
-        self.tabview.tab("Kaval Master").grid_columnconfigure(0, weight=1) 
-        self.tabview.tab("Tab 2").grid_columnconfigure(0, weight=1)
+        #self.tabview.tab("Kaval Master").grid_columnconfigure(0, weight=1) 
+        #self.tabview.tab("Surname Master").grid_columnconfigure(0, weight=1)
         self.tabview.tab("Settings").grid_columnconfigure(0, weight=1)
+
+        self.tabview.tab("Kaval Master").rowconfigure(3, weight=1)
+        self.tabview.tab("Kaval Master").columnconfigure(0, weight=1)
+        self.tabview.tab("Kaval Master").columnconfigure(1, weight=1)
+
+        self.tabview.tab("Surname Master").rowconfigure(3, weight=1)
+        self.tabview.tab("Surname Master").columnconfigure(0, weight=1)
+        self.tabview.tab("Surname Master").columnconfigure(1, weight=1)
+
+        # BEGAIN OF TAB 1 NAMED : Kaval Master
 
         # new entry dilog box part
         self.addNew_frame = customtkinter.CTkFrame(self.tabview.tab("Kaval Master"))
@@ -90,10 +100,16 @@ class App(customtkinter.CTk):
         self.deleteBtn_inKMLabel = customtkinter.CTkButton(self.labelkm_frame, text="Delete",
                                                            command=self.delete_item_from_Kaval_Master)
         self.deleteBtn_inKMLabel.grid(row=0, column=2, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_inKMLabel = customtkinter.CTkButton(self.labelkm_frame, text="Refresh",
+                                                           command=self.refresh_table)
+        self.refreshBtn_inKMLabel.grid(row=0, column=3, padx=(5, 5), pady=(5, 5),sticky="nsew")
 
         # view Tabel
-        self.viewTabel_km_frame = customtkinter.CTkScrollableFrame(self.tabview.tab("Kaval Master"))
+        self.viewTabel_km_frame = customtkinter.CTkFrame(self.tabview.tab("Kaval Master"))
         self.viewTabel_km_frame.grid(row=3, column=0, columnspan=2, padx=(5, 5), pady=(5, 5), sticky="nsew")
+        self.viewTabel_km_frame.columnconfigure(0, weight=1)
+        self.viewTabel_km_frame.rowconfigure(0, weight=1)
+        
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
         file_path = os.path.join(script_dir,"manifest.json")
@@ -107,45 +123,344 @@ class App(customtkinter.CTk):
         cursor = db.cursor()
         cursor.execute("SELECT * FROM kaval_master")
         data = cursor.fetchall()
-        self.tree = ttk.Treeview(self.viewTabel_km_frame, columns=("SNo.", "Kaval ID", "Kaval Name"))
+        self.tree = ttk.Treeview(self.viewTabel_km_frame, columns=list(range(len(data[0]))), show="headings", style="Treeview")
+        #self.tree = ttk.Treeview(self.viewTabel_km_frame, columns=("SNo.", "Kaval ID", "Kaval Name"))
+        # Set column headings
+        for i, heading in enumerate(cursor.column_names):
+            self.tree.heading(i, text=heading)
+
+        # Insert data into the treeview
+        for row in data:
+             self.tree.insert("", "end", values=row)
+
+        # Pack the treeview into the parent widget
+        self.tree.pack(fill="both", expand=True)
 
         # Define column names
-        self.tree.heading("#1", text="SNo.")
-        self.tree.heading("#2", text="Kaval ID")
-        self.tree.heading("#3", text="Kaval Name")
+        #self.tree.heading("#1", text="SNo.")
+        #self.tree.heading("#2", text="Kaval ID")
+        #self.tree.heading("#3", text="Kaval Name")
 
         # Insert data into the TreeView
-        for row in data:
-            self.tree.insert("", "end", values=row)
+        #for row in data:
+        #    self.tree.insert("", "end", values=row)
 
         # Apply custom styling to the TreeView
-        self.tree.configure(style="Custom.Treeview")
+        #self.tree.configure(style="Custom.Treeview")
 
         # Define a custom style using tkinter's Style class
-        style = ttk.Style()
-        style.configure("Custom.Treeview")#, background="#f7f7f7")
-        style.map("Custom.Treeview")#, background=[("selected", "#347083")])
+        #style = ttk.Style()
+        #style.configure("Custom.Treeview")#, background="#f7f7f7")
+        #style.map("Custom.Treeview")#, background=[("selected", "#347083")])
 
         # Pack the TreeView
-        self.tree.pack(fill="both", expand=True)
+        #self.tree.pack(fill="both", expand=True)
 
         # Close the cursor and database connection
         cursor.close()
         db.close()
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        # END OF TAB 1 NAMED : Kaval Master
 
-        self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Tab 2"), text="Need to write code still")
-        self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
+        # BEGAIN OF TAB 2 NAMED : Surname Master
+        # Configure Treeview style
+        style = ttk.Style()
+        style.theme_use("default")
+        style.configure("Treeview",
+                        background="#2a2d2e",
+                        foreground="white",
+                        rowheight=25,
+                        fieldbackground="#343638",
+                        bordercolor="#343638",
+                        borderwidth=0,
+                        font=('Arial', 12))  # Set the font size to 12 or adjust as needed
+
+        style.map('Treeview', background=[('selected', '#22559b')])
+
+        style.configure("Treeview.Heading",
+                        background="#565b5e",
+                        foreground="white",
+                        relief="flat",
+                        font=('Arial', 12))  # Set the font size to 12 or adjust as needed
+
+        style.map("Treeview.Heading",
+                background=[('active', '#3484F0')])
+        # new entry dilog box part
+        self.addNew_frame_SM = customtkinter.CTkFrame(self.tabview.tab("Surname Master"))
+        self.addNew_frame_SM.grid(row=0, column=0, padx=(0, 5), pady=(10, 10),sticky="nsew")
+
+        self.head_label_inNew_SM = customtkinter.CTkLabel(self.addNew_frame_SM, text="Add Data in Database")
+        self.head_label_inNew_SM.grid(row=0, column=0, columnspan=2, padx=(20, 20), pady=(10, 10))
+
+        self.enterId_label_inNew_SM = customtkinter.CTkLabel(self.addNew_frame_SM, text="Enter ID")
+        self.enterId_label_inNew_SM.grid(row=1, column=0, padx=(20, 20), pady=(5, 5))
+        self.enter_id_inNew_SM = customtkinter.CTkEntry(self.addNew_frame_SM, placeholder_text="1909")
+        self.enter_id_inNew_SM.grid(row=1, column=1, padx=(20, 20), pady=(5, 5))
+
+        self.enterName_label_inNew_SM = customtkinter.CTkLabel(self.addNew_frame_SM, text="Enter Name")
+        self.enterName_label_inNew_SM.grid(row=2, column=0, padx=(20, 20), pady=(5, 5))
+        self.enter_Name_inNew_SM = customtkinter.CTkEntry(self.addNew_frame_SM, placeholder_text="Surname xx")
+        self.enter_Name_inNew_SM.grid(row=2, column=1, padx=(20, 20), pady=(5, 10))
+
+        self.enterNew_inNew_SM = customtkinter.CTkButton(self.addNew_frame_SM, text="Add into Database",
+                                                           command=self.add_to_the_surname_master)
+        self.enterNew_inNew_SM.grid(row=3, column=0, columnspan=2, padx=(20, 20), pady=(10, 20))
+
+        # find option dilog box
+        self.findDB_frame_SM = customtkinter.CTkFrame(self.tabview.tab("Surname Master"))
+        self.findDB_frame_SM.grid(row=0, column=1, padx=(5, 0), pady=(10, 10),sticky="nsew")
+
+        self.head_label_inFind_SM = customtkinter.CTkLabel(self.findDB_frame_SM, text="Scearch in Database")
+        self.head_label_inFind_SM.grid(row=0, column=0, columnspan=2, padx=(20, 20), pady=(10, 10))
+        self.findBy_inEdit_Label_SM = customtkinter.CTkLabel(self.findDB_frame_SM, text="Find By", anchor="w")
+        self.findBy_inEdit_Label_SM.grid(row=1, column=0, padx=20, pady=(5, 5))
+        self.findBy_inEdit_optionemenu_SM = customtkinter.CTkOptionMenu(self.findDB_frame_SM, values=["Surname ID", "Surname Name"])
+        self.findBy_inEdit_optionemenu_SM.grid(row=1, column=1, padx=20, pady=(5, 5))
+        self.data_label_inFind_SM = customtkinter.CTkLabel(self.findDB_frame_SM, text="Enter Respective Data")
+        self.data_label_inFind_SM.grid(row=2, column=0, padx=(20, 20), pady=(5, 5))
+        self.enter_data_inFind_SM = customtkinter.CTkEntry(self.findDB_frame_SM, placeholder_text="enter data")
+        self.enter_data_inFind_SM.grid(row=2, column=1, padx=(20, 20), pady=(5, 5))
+        self.editBtn_inEdit_SM = customtkinter.CTkButton(self.findDB_frame_SM, text="Find",
+                                                           command=self.findData_from_kaval_master_SM)
+        self.editBtn_inEdit_SM.grid(row=3, column=0, columnspan=2, padx=(20, 20), pady=(20, 20))
+
+        # Just Label to view Tabel
+        self.labelkm_frame_SM = customtkinter.CTkFrame(self.tabview.tab("Surname Master"), fg_color="transparent")
+        self.labelkm_frame_SM.grid(row=2, column=0, padx=(0, 0), pady=(10, 10), sticky="nsew")
+        
+        self.label_inKMlabel_SM = customtkinter.CTkLabel(self.labelkm_frame_SM, text="Database View Point")
+        self.label_inKMlabel_SM.grid(row=0, column=0, padx=(5, 15), pady=(5, 5),sticky="nsew")
+
+        self.editBtn_inKMLabel_SM = customtkinter.CTkButton(self.labelkm_frame_SM, text="Edit",
+                                                           command=self.edit_item_from_Kaval_Master_SM)
+        self.editBtn_inKMLabel_SM.grid(row=0, column=1, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.deleteBtn_inKMLabel_SM = customtkinter.CTkButton(self.labelkm_frame_SM, text="Delete",
+                                                           command=self.delete_item_from_Kaval_Master_SM)
+        self.deleteBtn_inKMLabel_SM.grid(row=0, column=2, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_inKMLabel_SM = customtkinter.CTkButton(self.labelkm_frame_SM, text="Refresh",
+                                                           command=self.refresh_table_SM)
+        self.refreshBtn_inKMLabel_SM.grid(row=0, column=3, padx=(5, 5), pady=(5, 5),sticky="nsew")
+
+        # view Tabel
+        self.viewTabel_km_frame_SM = customtkinter.CTkFrame(self.tabview.tab("Surname Master"))
+        self.viewTabel_km_frame_SM.grid(row=3, column=0, columnspan=2, padx=(5, 5), pady=(5, 5), sticky="nsew")
+        try:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(script_dir, "manifest.json")
+
+            with open(file_path, "r") as json_file:
+                json_data = json.load(json_file)
+
+            db = mysql.connector.connect(
+                host=json_data["Database"]["host"],
+                user=json_data["Database"]["username"],
+                password=json_data["Database"]["password"],
+                database=json_data["Database"]["database_name"]
+            )
+
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM surname_master")
+            data = cursor.fetchall()
+
+            # Destroy the existing Treeview widget if it exists
+            if hasattr(self, "treeview"):
+                self.treeview.destroy()
+
+            # Create a new Treeview widget
+            self.treeview = ttk.Treeview(self.viewTabel_km_frame_SM, columns=list(range(len(data[0]))), show="headings", style="Treeview")
+            # Configure the interior frame to expand
+            self.viewTabel_km_frame_SM.columnconfigure(0, weight=1)
+            self.viewTabel_km_frame_SM.rowconfigure(0, weight=1)
+            self.treeview.grid(row=0, column=0, sticky="nsew")
+            self.treeview.grid(sticky="nsew")
+
+            # Set column headings
+            for i, heading in enumerate(cursor.column_names):
+                self.treeview.heading(i, text=heading)
+
+            # Insert data into the treeview
+            for row in data:
+                self.treeview.insert("", "end", values=row)
+
+            # Pack the treeview into the parent widget
+            self.treeview.pack(fill="both", expand=True)
+
+            cursor.close()
+            db.close()
+
+        except Exception as e:
+            # Handle exceptions here (e.g., file not found, database connection error)
+            print(f"An error occurred: {str(e)}")
+
+        # ENDS OF TAB 2 NAMED : Surname Master
+
+        self.tabview.tab("Settings").columnconfigure(0, weight=1)
+        self.tabview.tab("Settings").columnconfigure(1, weight=1)
+        self.tabview.tab("Settings").columnconfigure(2, weight=1)
+        self.tabview.tab("Settings").columnconfigure(3, weight=1)
 
         self.appearance_mode_label = customtkinter.CTkLabel(self.tabview.tab("Settings"), text="Appearance Mode:", anchor="w")
-        self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
+        self.appearance_mode_label.grid(row=2, column=1, padx=20, pady=10)
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.tabview.tab("Settings"), values=["Light", "Dark", "System"],
                                                                        command=self.change_appearance_mode_event)
-        self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
+        self.appearance_mode_optionemenu.grid(row=2, column=2, padx=20, pady=10)
         self.scaling_label = customtkinter.CTkLabel(self.tabview.tab("Settings"), text="UI Scaling:", anchor="w")
-        self.scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
+        self.scaling_label.grid(row=3, column=1, padx=20, pady=10)
         self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.tabview.tab("Settings"), values=["80%", "90%", "100%", "110%", "120%"],
                                                                command=self.change_scaling_event)
-        self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
+        self.scaling_optionemenu.grid(row=3, column=2, padx=20, pady=10)
+        #self.color_theme_label = customtkinter.CTkLabel(self.tabview.tab("Settings"), text="Color Theme:", anchor="w")
+        #self.color_theme_label.grid(row=9, column=0, padx=20, pady=(10, 0))
+        #self.color_theme_optionmenu = customtkinter.CTkOptionMenu(self.tabview.tab("Settings"), values=["Blue", "Green"],
+        #                                                        command=self.change_color_theme_event)
+        #self.color_theme_optionmenu.grid(row=10, column=0, padx=20, pady=(10, 20))
+
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="Download Kaval in PDF",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=4, column=0, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="Download Surname in PDF",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=4, column=1, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="Open PDF Location",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=4, column=2, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="Exit",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=4, column=3, padx=(5, 5), pady=(5, 5),sticky="nsew")
+
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=5, column=0, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=5, column=1, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=5, column=2, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=5, column=3, padx=(5, 5), pady=(5, 5),sticky="nsew")
+
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=6, column=0, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=6, column=1, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
+                                                           command=self.refresh_table_SM,state="disabled")
+        self.refreshBtn_test.grid(row=6, column=2, padx=(5, 5), pady=(5, 5),sticky="nsew")
+        self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
+                                                           command=self.refresh_table_SM ,state="disabled")
+        self.refreshBtn_test.grid(row=6, column=3, padx=(5, 5), pady=(5, 5),sticky="nsew")
+
+        self.appearance_mode_label = customtkinter.CTkLabel(self.tabview.tab("Settings"), text="Software is under development stage, if any issue please let us know by opening issue in github repo.", anchor="w")
+        self.appearance_mode_label.grid(row=8, column=0, columnspan=4, padx=10, pady=10)
+
+
+    #def set_default_color_theme(self, theme):
+        # Set the default color theme based on the selected theme
+        #if theme == "Blue":
+            #customtkinter.set_default_color_theme("blue")
+            # Add more theme-specific colors as needed
+        #elif theme == "Green":
+            #customtkinter.set_default_color_theme("green")
+            # Add more theme-specific colors as needed
+
+    #def change_color_theme_event(self, theme):
+        #self.set_default_color_theme(theme)
+
+    def add_to_the_surname_master(self):
+        # Retrieve user-entered ID and Name from the Entry widgets
+        new_id = self.enter_id_inNew_SM.get()
+        new_name = self.enter_Name_inNew_SM.get()
+
+        # Validate that both ID and Name are provided
+        if not new_id or not new_name:
+            # Show an error message or handle the validation as needed
+            print("Both ID and Name are required.")
+            return
+
+        try:
+            # Create a MySQL connection
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(script_dir,"manifest.json")
+            json_data = read_json_file(file_path)
+            db = mysql.connector.connect(
+                host=json_data["Database"]["host"],
+                user=json_data["Database"]["username"],
+                password=json_data["Database"]["password"],
+                database=json_data["Database"]["database_name"]
+            )
+
+            # Create a cursor
+            cursor = db.cursor()
+
+            # Insert the new data into the MySQL table
+            insert_query = "INSERT INTO surname_master (Surname_ID, Surname_Name) VALUES (%s, %s)"
+            cursor.execute(insert_query, (new_id, new_name))
+
+            # Commit the changes to the database
+            db.commit()
+
+            # Close the cursor and database connection
+            cursor.close()
+            db.close()
+
+            # Clear the Entry widgets after adding the data
+            self.enter_id_inNew.delete(0, "end")
+            self.enter_Name_inNew.delete(0, "end")
+
+            # Optionally, refresh the table to reflect the new data
+            self.refresh_table_SM()
+
+        except Exception as e:
+            # Handle exceptions here (e.g., database connection error)
+            print(f"An error occurred while adding data: {str(e)}")
+    
+    def refresh_table_SM(self):
+        try:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(script_dir, "manifest.json")
+
+            with open(file_path, "r") as json_file:
+                json_data = json.load(json_file)
+
+            db = mysql.connector.connect(
+                host=json_data["Database"]["host"],
+                user=json_data["Database"]["username"],
+                password=json_data["Database"]["password"],
+                database=json_data["Database"]["database_name"]
+            )
+
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM surname_master")
+            data = cursor.fetchall()
+
+            # Destroy the existing Treeview widget if it exists
+            if hasattr(self, "treeview"):
+                self.treeview.destroy()
+
+            # Create a new Treeview widget
+            self.treeview = ttk.Treeview(self.viewTabel_km_frame_SM, columns=list(range(len(data[0]))), show="headings", style="Treeview")
+
+            # Set column headings
+            for i, heading in enumerate(cursor.column_names):
+                self.treeview.heading(i, text=heading)
+
+            # Insert data into the treeview
+            for row in data:
+                self.treeview.insert("", "end", values=row)
+
+            # Pack the treeview into the parent widget
+            self.treeview.pack(fill="both", expand=True)
+
+            cursor.close()
+            db.close()
+
+        except Exception as e:
+            # Handle exceptions here (e.g., file not found, database connection error)
+            print(f"An error occurred: {str(e)}")
 
     def refresh_table(self):
         # Read JSON data from the manifest.json file
@@ -166,7 +481,7 @@ class App(customtkinter.CTk):
             cursor = db.cursor()
             cursor.execute("SELECT * FROM kaval_master")
             data = cursor.fetchall()
-
+ 
             for item in self.tree.get_children():
                 self.tree.delete(item)
 
@@ -287,6 +602,62 @@ class App(customtkinter.CTk):
             # Handle exceptions here (e.g., database connection error)
             print(f"An error occurred while searching: {str(e)}")
 
+    def findData_from_kaval_master_SM(self):
+        # Retrieve user-selected search criteria and entered data
+        find_by = self.findBy_inEdit_optionemenu_SM.get()
+        entered_data = self.enter_data_inFind_SM.get()
+
+        # Validate that the entered data is not empty
+        if not entered_data:
+            # Show an error message or handle the validation as needed
+            print("Please enter data to search.")
+            return
+
+        try:
+            # Create a MySQL connection
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(script_dir,"manifest.json")
+            json_data = read_json_file(file_path)
+            db = mysql.connector.connect(
+                host=json_data["Database"]["host"],
+                user=json_data["Database"]["username"],
+                password=json_data["Database"]["password"],
+                database=json_data["Database"]["database_name"]
+            )
+
+            # Create a cursor
+            cursor = db.cursor()
+
+            # Define the query based on the selected search criteria
+            if find_by == "Surname ID":
+                query = "SELECT * FROM surname_master WHERE Surname_ID = %s"
+            elif find_by == "Surname Name":
+                query = "SELECT * FROM surname_master WHERE Surname_Name = %s"
+            else:
+                # Handle unsupported search criteria
+                print("Unsupported search criteria.")
+                return
+
+            # Execute the query with the entered data
+            cursor.execute(query, (entered_data,))
+            data = cursor.fetchall()
+
+            # Clear the TreeView to display the search results
+            for item in self.treeview.get_children():
+                self.treeview.delete(item)
+
+            # Insert the search results into the TreeView
+            for row in data:
+                self.treeview.insert("", "end", values=row)
+
+            # Close the cursor and database connection
+            cursor.close()
+            db.close()
+
+        except Exception as e:
+            # Handle exceptions here (e.g., database connection error)
+            print(f"An error occurred while searching: {str(e)}")
+
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
         print("CTkInputDialog:", dialog.get_input())
@@ -366,6 +737,84 @@ class App(customtkinter.CTk):
         db.close()
         # Refresh the table to reflect the changes
         self.refresh_table()
+
+    #=======
+    def delete_item_from_Kaval_Master_SM(self):
+        # Create an input dialog to get the ID to delete
+        dialog = customtkinter.CTkInputDialog(text="Enter ID which you want to delete", title="Deleting Item")
+        selected_id = dialog.get_input()
+
+        if not selected_id:
+            # No ID entered
+            return
+
+        # Create a MySQL connection
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir,"manifest.json")
+        json_data = read_json_file(file_path)
+        db = mysql.connector.connect(
+            host=json_data["Database"]["host"],
+            user=json_data["Database"]["username"],
+            password=json_data["Database"]["password"],
+            database=json_data["Database"]["database_name"]
+        )
+
+        # Create a cursor
+        cursor = db.cursor()
+
+        # Delete the data from the MySQL table based on the entered ID
+        cursor.execute("DELETE FROM surname_master WHERE Surname_ID = %s", (selected_id,))
+
+        # Commit the changes to the database
+        db.commit()
+
+        # Close the cursor and database connection
+        cursor.close()
+        db.close()
+
+        # Refresh the table to reflect the changes
+        self.refresh_table_SM()
+
+    def edit_item_from_Kaval_Master_SM(self):
+        # Create an input dialog to get the ID to edit
+        dialog = customtkinter.CTkInputDialog(text="Enter ID to edit", title="Editing Item")
+        selected_id = dialog.get_input()
+
+        if not selected_id:
+            # No ID entered
+            return
+
+        # Create an input dialog to get the new name
+        new_name_dialog = customtkinter.CTkInputDialog(text="Enter the new name", title="Editing Name")
+        new_name = new_name_dialog.get_input()
+
+        if not new_name:
+            # No new name entered
+            return
+
+        # Create a MySQL connection
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir,"manifest.json")
+        json_data = read_json_file(file_path)
+        db = mysql.connector.connect(
+            host=json_data["Database"]["host"],
+            user=json_data["Database"]["username"],
+            password=json_data["Database"]["password"],
+            database=json_data["Database"]["database_name"]
+        )
+
+        # Create a cursor
+        cursor = db.cursor()
+        # Update the name in the MySQL table based on the selected ID
+        cursor.execute("UPDATE surname_master SET Surname_Name = %s WHERE Surname_ID = %s", (new_name, selected_id))
+        # Commit the changes to the database
+        db.commit()
+        # Close the cursor and database connection
+        cursor.close()
+        db.close()
+        # Refresh the table to reflect the changes
+        self.refresh_table_SM()
+
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
