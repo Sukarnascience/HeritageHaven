@@ -10,6 +10,12 @@ import isUpdate as isUP
 from tksheet import Sheet
 import mysql.connector
 
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from datetime import datetime
+from tkinter import messagebox
+import webbrowser
+
 customtkinter.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
 
@@ -316,42 +322,42 @@ class App(customtkinter.CTk):
         #self.color_theme_optionmenu.grid(row=10, column=0, padx=20, pady=(10, 20))
 
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="Download Kaval in PDF",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.db_2_pdf_kaval_master)
         self.refreshBtn_test.grid(row=4, column=0, padx=(5, 5), pady=(5, 5),sticky="nsew")
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="Download Surname in PDF",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.db_2_pdf_surname_master)
         self.refreshBtn_test.grid(row=4, column=1, padx=(5, 5), pady=(5, 5),sticky="nsew")
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="Open PDF Location",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.open_downloads_folder)
         self.refreshBtn_test.grid(row=4, column=2, padx=(5, 5), pady=(5, 5),sticky="nsew")
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="Exit",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.exit_application)
         self.refreshBtn_test.grid(row=4, column=3, padx=(5, 5), pady=(5, 5),sticky="nsew")
 
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.sidebar_button_event,state="disabled")
         self.refreshBtn_test.grid(row=5, column=0, padx=(5, 5), pady=(5, 5),sticky="nsew")
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.sidebar_button_event,state="disabled")
         self.refreshBtn_test.grid(row=5, column=1, padx=(5, 5), pady=(5, 5),sticky="nsew")
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.sidebar_button_event,state="disabled")
         self.refreshBtn_test.grid(row=5, column=2, padx=(5, 5), pady=(5, 5),sticky="nsew")
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.sidebar_button_event,state="disabled")
         self.refreshBtn_test.grid(row=5, column=3, padx=(5, 5), pady=(5, 5),sticky="nsew")
 
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.sidebar_button_event,state="disabled")
         self.refreshBtn_test.grid(row=6, column=0, padx=(5, 5), pady=(5, 5),sticky="nsew")
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.sidebar_button_event,state="disabled")
         self.refreshBtn_test.grid(row=6, column=1, padx=(5, 5), pady=(5, 5),sticky="nsew")
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
-                                                           command=self.refresh_table_SM,state="disabled")
+                                                           command=self.sidebar_button_event,state="disabled")
         self.refreshBtn_test.grid(row=6, column=2, padx=(5, 5), pady=(5, 5),sticky="nsew")
         self.refreshBtn_test = customtkinter.CTkButton(self.tabview.tab("Settings"), text="NA",
-                                                           command=self.refresh_table_SM ,state="disabled")
+                                                           command=self.sidebar_button_event ,state="disabled")
         self.refreshBtn_test.grid(row=6, column=3, padx=(5, 5), pady=(5, 5),sticky="nsew")
 
         self.appearance_mode_label = customtkinter.CTkLabel(self.tabview.tab("Settings"), text="Software is under development stage, if any issue please let us know by opening issue in github repo.", anchor="w")
@@ -825,6 +831,116 @@ class App(customtkinter.CTk):
 
     def sidebar_button_event(self):
         print("sidebar_button click")
+    
+    def exit_application(self):
+        # Confirm with the user before exiting
+        confirm = messagebox.askyesno("Exit", "Are you sure you want to exit?")
+        if confirm:
+            self.destroy()
+
+    def open_downloads_folder(self):
+        downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+        webbrowser.open(downloads_folder)
+
+    def db_2_pdf_kaval_master(self):
+        # Load MySQL connection details from manifest.json
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir, "manifest.json")
+
+        with open(file_path, "r") as json_file:
+            json_data = json.load(json_file)
+
+        # Connect to MySQL
+        db = mysql.connector.connect(
+            host=json_data["Database"]["host"],
+            user=json_data["Database"]["username"],
+            password=json_data["Database"]["password"],
+            database=json_data["Database"]["database_name"]
+        )
+
+        cursor = db.cursor()
+        cursor.execute(f"SELECT * FROM kaval_master")
+        data = cursor.fetchall()
+
+        cursor.close()
+        db.close()
+
+        # Generate PDF file name with table name, date, and timestamp
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        pdf_filename = f"kaval_master_{timestamp}.pdf"
+
+        # Save PDF in the Downloads folder
+        downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+        pdf_path = os.path.join(downloads_folder, pdf_filename)
+
+        # Create a PDF document
+        doc = SimpleDocTemplate(pdf_path, pagesize=letter)
+
+        # Create a table from the MySQL data
+        table_data = [tuple(['SNo.', 'Kaval ID', 'Kaval Name'])] + data
+        pdf_table = Table(table_data)
+
+        # Add style to the table (including borders)
+        style = TableStyle([('GRID', (0, 0), (-1, -1), 1, (0, 0, 0))])
+        pdf_table.setStyle(style)
+
+        # Build the PDF document
+        doc.build([pdf_table])
+
+        # Display a popup notification
+        message_title = "PDF Downloaded"
+        message_text = f"The PDF file has been downloaded to the Downloads folder: {pdf_path}"
+        messagebox.showinfo(message_title, message_text)
+
+    def db_2_pdf_surname_master(self):
+        # Load MySQL connection details from manifest.json
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir, "manifest.json")
+
+        with open(file_path, "r") as json_file:
+            json_data = json.load(json_file)
+
+        # Connect to MySQL
+        db = mysql.connector.connect(
+            host=json_data["Database"]["host"],
+            user=json_data["Database"]["username"],
+            password=json_data["Database"]["password"],
+            database=json_data["Database"]["database_name"]
+        )
+
+        cursor = db.cursor()
+        cursor.execute(f"SELECT * FROM surname_master")
+        data = cursor.fetchall()
+
+        cursor.close()
+        db.close()
+
+        # Generate PDF file name with table name, date, and timestamp
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        pdf_filename = f"surname_master_{timestamp}.pdf"
+
+        # Save PDF in the Downloads folder
+        downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+        pdf_path = os.path.join(downloads_folder, pdf_filename)
+
+        # Create a PDF document
+        doc = SimpleDocTemplate(pdf_path, pagesize=letter)
+
+        # Create a table from the MySQL data
+        table_data = [tuple(['Surname ID', 'Surname Name'])] + data
+        pdf_table = Table(table_data)
+
+        # Add style to the table (including borders)
+        style = TableStyle([('GRID', (0, 0), (-1, -1), 1, (0, 0, 0))])
+        pdf_table.setStyle(style)
+
+        # Build the PDF document
+        doc.build([pdf_table])
+
+        # Display a popup notification
+        message_title = "PDF Downloaded"
+        message_text = f"The PDF file has been downloaded to the Downloads folder: {pdf_path}"
+        messagebox.showinfo(message_title, message_text)
 
 def read_json_file(file_path):
     with open(file_path, "r") as json_file:
