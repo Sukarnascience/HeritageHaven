@@ -138,6 +138,7 @@ class App(customtkinter.CTk):
         # Insert data into the treeview
         for row in data:
              self.tree.insert("", "end", values=row)
+        self.add_colors(tabelN="tree")
 
         # Pack the treeview into the parent widget
         self.tree.pack(fill="both", expand=True)
@@ -185,18 +186,29 @@ class App(customtkinter.CTk):
                              rowheight=25,
                              fieldbackground="#343638",
                              bordercolor="#343638",
-                             borderwidth=1,
+                             borderwidth=0,
                              font=('Arial', 12))
 
         self.style.map('Treeview', background=[('selected', '#22559b')])
 
         self.style.configure("Treeview.Heading",
-                             background="#565b5e",
+                             background="#000000",
                              foreground="white",
                              relief="flat",
                              font=('Arial', 12))
 
         self.style.map("Treeview.Heading", background=[('active', '#3484F0')])
+
+        #self.style.configure("Treeview.Cell",
+        #                     background="#2a2d2e",
+        #                     foreground="white",
+        #                     rowheight=25,
+        #                     fieldbackground="#343638",
+        #                     bordercolor="#343638",
+        #                     borderwidth=2,
+        #                     font=('Arial', 12))
+        
+        #self.style.map("Treeview.Cell", background=[('active', '#3484F0')])
 
 
         # new entry dilog box part
@@ -300,6 +312,7 @@ class App(customtkinter.CTk):
             # Insert data into the treeview
             for row in data:
                 self.treeview.insert("", "end", values=row)
+            self.add_colors(tabelN="treeview")
 
             # Pack the treeview into the parent widget
             self.treeview.pack(fill="both", expand=True)
@@ -382,7 +395,6 @@ class App(customtkinter.CTk):
 
         self.appearance_mode_label = customtkinter.CTkLabel(self.tabview.tab("Settings"), text="Software is under development stage, if any issue please let us know by opening issue in github repo.", anchor="w")
         self.appearance_mode_label.grid(row=8, column=0, columnspan=4, padx=10, pady=10)
-
 
     #def set_default_color_theme(self, theme):
         # Set the default color theme based on the selected theme
@@ -671,6 +683,8 @@ class App(customtkinter.CTk):
             for row in data:
                 self.treeview.insert("", "end", values=row)
 
+            self.add_colors(tabelN="treeview")
+
             # Pack the treeview into the parent widget
             self.treeview.pack(fill="both", expand=True)
             # Create a context menu
@@ -714,6 +728,7 @@ class App(customtkinter.CTk):
             for row in data:
                 self.tree.insert("", "end", values=row)
 
+            self.add_colors(tabelN = "tree")
 
             # Create a context menu
             self.context_menu_KM = tk.Menu(self, tearoff=0, font=("Arial", 14))  # Set the font size to 14 or adjust as needed
@@ -1050,6 +1065,21 @@ class App(customtkinter.CTk):
         # Refresh the table to reflect the changes
         self.refresh_table_SM()
 
+    def add_colors(self,tabelN="treeview"):
+        if(tabelN=="treeview"):
+            for i, item in enumerate(self.treeview.get_children()):
+                if i % 2 == 0:
+                    self.treeview.tag_configure(f"evenrow_{i}", background="#444444")  # Even row color
+                else:
+                    self.treeview.tag_configure(f"oddrow_{i}", background="#5b5b5b")   # Odd row color
+                self.treeview.item(item, tags=(f"evenrow_{i}" if i % 2 == 0 else f"oddrow_{i}"))
+        elif(tabelN=="tree"):
+            for i, item in enumerate(self.tree.get_children()):
+                if i % 2 == 0:
+                    self.tree.tag_configure(f"evenrow_{i}", background="#444444")  # Even row color
+                else:
+                    self.tree.tag_configure(f"oddrow_{i}", background="#5b5b5b")   # Odd row color
+                self.tree.item(item, tags=(f"evenrow_{i}" if i % 2 == 0 else f"oddrow_{i}"))
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
