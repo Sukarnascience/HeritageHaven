@@ -1,7 +1,7 @@
 @echo off
 echo HeritageHaven - Setup Script
 echo Author: Sukarna Jana
-echo Version: 0.0.1V
+echo Version: 1.0.4V
 echo Last Update: 13-09-2023
 echo.
 echo Installing...
